@@ -8,7 +8,7 @@ namespace RepTests
 {
     internal class B
     {
-        public int R()
+        public float G()
         {
             return 0;
         }
