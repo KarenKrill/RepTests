@@ -8,5 +8,9 @@ namespace RepTests
 {
     internal class B
     {
+        public int R()
+        {
+            return 0;
+        }
     }
 }
