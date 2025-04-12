@@ -4,6 +4,8 @@
     {
         static void Main(string[] args)
         {
+            SomeClassLibrary.SomeClass someClass = new(13);
+            someClass.Print();
             Console.WriteLine("Hello, World!");
             Console.WriteLine("Hello, World!");
             Console.WriteLine("Hello, World!");
