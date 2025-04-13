@@ -45,7 +45,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Package build
-      run: dotnet pack ${{ env.PACKAGE_PROJECT_PATH }} --no-restore --configuration Release -p:PackageVersion=${{ steps.version.outputs.version-without-v }} --output ${{ env.PACKAGE_DIRECTORY }}
+      run: dotnet pack ${{ env.PACKAGE_PROJECT_PATH }} --no-restore --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }} --output ${{ env.PACKAGE_DIRECTORY }}
     - name: Add nuget source
       run: dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.NUGET_PUBLISH_TOKEN }} --store-password-in-clear-text --name GitOwnerSource https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
     - name: Package push
