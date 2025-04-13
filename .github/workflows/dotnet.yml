@@ -35,6 +35,10 @@ jobs:
     - name: Get version
       id: version
       uses: codacy/git-version@2.8.0
+    - name: Print git version
+      run: echo ${{ steps.version.outputs.version }}
+    - name: Print git version-without-v
+      run: echo ${{ steps.version.outputs.version-without-v }}
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Package build
