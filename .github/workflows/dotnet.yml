@@ -43,7 +43,7 @@ jobs:
         dev-branch: dev # default is dev
     - name: Get version 2
       id: version2
-      uses: battila7/git-version-action@v2
+      uses: battila7/get-version-action@v2
     - name: Print git version
       run: echo ${{ steps.version.outputs.version }}
     - name: Print git version 2
