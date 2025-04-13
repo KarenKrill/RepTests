@@ -10,6 +10,7 @@ on:
     branches: [ "main" ]
 
 env:
+  PACKAGE_PROJECT_PATH: ${{ github.workspace }}\SomeProjectLibrary\SomeProjectLibrary.csproj
   PACKAGE_DIRECTORY: ${{ github.workspace }}\packages
 
 jobs:
@@ -30,7 +31,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Package build
-      run: dotnet pack --configuration Release
+      run: dotnet pack {{ env.PACKAGE_PROJECT_PATH }} --configuration Release --output ${{ env.PACKAGE_DIRECTORY }}
     - name: Add nuget source
       run: dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
     - name: Package push
