@@ -33,4 +33,4 @@ jobs:
     - name: Package build
       run: dotnet pack ${{ env.PACKAGE_PROJECT_PATH }} --no-restore --configuration Release --output ${{ env.PACKAGE_DIRECTORY }}
     - name: Package push
-      run: dotnet nuget push ${{ env.PACKAGE_DIRECTORY }}/*.nupkg -k ${{ secrets.PackagesPublishToken }} -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+      run: dotnet nuget push ${{ env.PACKAGE_DIRECTORY }}/*.nupkg -k ${{ github.PackagesPublishToken }} -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
