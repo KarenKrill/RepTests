@@ -37,7 +37,7 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Get version
       id: version
-      uses: codacy/git-version@2.8.0
+      uses: codacy/git-version@2.4.0
       with:
         release-branch: main # default is master
         dev-branch: dev # default is dev
