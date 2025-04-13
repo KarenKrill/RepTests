@@ -41,8 +41,13 @@ jobs:
       with:
         release-branch: main # default is master
         dev-branch: dev # default is dev
+    - name: Get version 2
+      id: version2
+      uses: battila7/git-version-action@v2
     - name: Print git version
       run: echo ${{ steps.version.outputs.version }}
+    - name: Print git version 2
+      run: echo ${{ steps.version2.outputs.version }} | echo "    " | echo ${{ steps.version2.outputs.version-without-v }}
     - name: Package build
       run: dotnet pack ${{ env.PACKAGE_PROJECT_PATH }} --no-restore --configuration ${{ env.BUILD_CONFIGURATION }} -p:PackageVersion=${{ steps.version.outputs.version }} --output ${{ env.PACKAGE_DIRECTORY }}
     - name: Add nuget source
