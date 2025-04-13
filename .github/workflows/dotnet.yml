@@ -32,7 +32,5 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Package build
       run: dotnet pack ${{ env.PACKAGE_PROJECT_PATH }} --no-restore --configuration Release --output ${{ env.PACKAGE_DIRECTORY }}
-    - name: Add nuget source
-      run: dotnet nuget add source --username ${{ github.actor }} --name github https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
     - name: Package push
-      run: dotnet nuget push ${{ env.PACKAGE_DIRECTORY }}/*.nupkg -k ${{ secrets.PackagesPublishToken }} --source "github"
+      run: dotnet nuget push ${{ env.PACKAGE_DIRECTORY }}/*.nupkg -k ${{ secrets.PackagesPublishToken }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
