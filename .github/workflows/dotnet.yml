@@ -10,7 +10,7 @@ on:
     branches: [ "main" ]
 
 env:
-  PACKAGE_PROJECT_PATH: ${{ github.workspace }}\SomeProjectLibrary\SomeProjectLibrary.csproj
+  PACKAGE_PROJECT_PATH: ${{ github.workspace }}\SomeClassLibrary\SomeClassLibrary.csproj
   PACKAGE_DIRECTORY: ${{ github.workspace }}\packages
 
 jobs:
