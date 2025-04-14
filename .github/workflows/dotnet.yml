@@ -40,6 +40,11 @@ jobs:
     - name: Add nuget source
       run: dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.NUGET_PUBLISH_TOKEN }} --store-password-in-clear-text --name GitOwnerSource https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
     - name: Package push
+      id: PackagePush
       run: dotnet nuget push ${{ env.PACKAGE_DIRECTORY }}/*.nupkg --source GitOwnerSource --skip-duplicate
+      continue-on-error: true
     - name: Remove nuget source
       run: dotnet nuget remove source GitOwnerSource
+    - name: On package push failed
+      if: steps.PackagePush.outcome != 'success'
+      run: exit 1
