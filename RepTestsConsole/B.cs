@@ -10,7 +10,7 @@ namespace RepTests
     {
         public float G()
         {
-            return 23;
+            return 243;
         }
     }
 }
