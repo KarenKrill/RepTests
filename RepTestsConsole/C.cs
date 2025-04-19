@@ -6,11 +6,7 @@ using System.Threading.Tasks;
 
 namespace RepTests
 {
-    internal class B
+    internal class C
     {
-        public float G()
-        {
-            return 243;
-        }
     }
 }
