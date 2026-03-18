@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public SomeClass(int id)
         {
-            Id = id;
+            Id = id + 1;
         }
         public void Print()
         {
