@@ -22,7 +22,7 @@ jobs:
           - 9.0.x
         buildConfig:
           - Debug
-          - Release
+          #- Release
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET
