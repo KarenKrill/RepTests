@@ -1,1 +1,1 @@
-dotnet nuget push ".\bin\Release\SomeClassLibrary.1.0.8.nupkg" --source "github"
+dotnet nuget push ".\bin\Release\SomeClassLibrary.1.0.9.nupkg" --source "github"
