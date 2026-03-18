@@ -12,6 +12,7 @@ on:
 
 jobs:
   build-and-test:
+    name: UbuntuDevTesting
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
