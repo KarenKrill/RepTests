@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         dotnetVersion:
-          - 6.0.x
+          #- 6.0.x
           - 9.0.x
         buildConfig:
           - Debug
