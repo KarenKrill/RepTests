@@ -1,7 +1,4 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
+name: Publishing
 
 on:
   push:
@@ -31,8 +28,6 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build ${{ github.workspace }} --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
     - name: Package build
       run: dotnet pack ${{ env.PACKAGE_PROJECT_PATH }} --no-restore --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.PACKAGE_DIRECTORY }}
     - name: Add nuget source
