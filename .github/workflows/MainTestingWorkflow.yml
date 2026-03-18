@@ -8,6 +8,7 @@ on:
 
 jobs:
   build-and-test:
+    name: UbuntuMainTesting
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
