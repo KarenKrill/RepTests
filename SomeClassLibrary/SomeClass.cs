@@ -6,7 +6,7 @@
 
         public void Print()
         {
-            Console.WriteLine($" SomeObject with id: {Id}");
+            Console.WriteLine($"SomeObject with id: {Id}");
         }
         public void Print2() { }
     }
