@@ -1,12 +1,9 @@
 ﻿namespace SomeClassLibrary
 {
-    public class SomeClass
+    public class SomeClass(int id)
     {
-        public int Id { get; set; }
-        public SomeClass(int id)
-        {
-            Id = id;
-        }
+        public int Id { get; } = id;
+
         public void Print()
         {
             Console.WriteLine($"SomeObject with id {Id}");
