@@ -5,46 +5,60 @@ on:
     tags:
       - "*"
 
+permissions:
+  contents: write
+
 env:
-  PACKAGE_PROJECT_PATH: ${{ github.workspace }}/SomeClassLibrary/SomeClassLibrary.csproj
-  PACKAGE_DIRECTORY: ${{ github.workspace }}/packages
-  BUILD_CONFIGURATION: Release
+  NUPKG_PROJ_PATH: ${{ github.workspace }}/SomeClassLibrary/SomeClassLibrary.csproj
+  NUPKG_DIR: ./nupackages
+  BUILD_CONFIG: Release
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+    - name: Check if tag is on default branch
+      run: |
+        DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+        git fetch origin $DEFAULT_BRANCH
+        if git merge-base --is-ancestor $GITHUB_SHA origin/$DEFAULT_BRANCH; then
+          echo "IS_DEFAULT_BRANCH=true" >> $GITHUB_ENV
+        else
+          echo "IS_DEFAULT_BRANCH=false" >> $GITHUB_ENV
+        fi
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 9.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build ${{ github.workspace }} --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+      run: dotnet build ${{ github.workspace }} --no-restore --configuration ${{ env.BUILD_CONFIG }}
     - name: Package build
-      run: dotnet pack ${{ env.PACKAGE_PROJECT_PATH }} --no-build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.PACKAGE_DIRECTORY }}
-    - name: Add nuget source
-      run: dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.NUGET_PUBLISH_TOKEN }} --store-password-in-clear-text --name GitOwnerSource https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
-    - name: Package push
-      id: PackagePush
-      run: dotnet nuget push ${{ env.PACKAGE_DIRECTORY }}/*.nupkg --source GitOwnerSource --skip-duplicate
-      continue-on-error: true
-
-    - name: Download artifacts
-      uses: actions/download-artifact@v4
+      run: dotnet pack ${{ env.NUPKG_PROJ_PATH }} --no-build --no-restore --configuration ${{ env.BUILD_CONFIG }} --output ${{ env.NUPKG_DIR }}
+      
     - name: Create archives
       run: |
         tar -czf release-linux.tar.gz **/bin/Release/**
-
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         files: |
           release-linux.tar.gz
-          **/*.nupkg
+          ${{ env.NUPKG_DIR }}/*.nupkg
+        generate_release_notes: true
+        prerelease: ${{ env.IS_DEFAULT_BRANCH != 'true' || contains(github.ref, '-') }}
 
+
+    - name: Add nuget source
+      run: dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.NUGET_PUBLISH_TOKEN }} --store-password-in-clear-text --name GitOwnerSource https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+    - name: Package push
+      id: PackagePush
+      run: dotnet nuget push ${{ env.NUPKG_DIR }}/*.nupkg --source GitOwnerSource --skip-duplicate
+      continue-on-error: true
     - name: Remove nuget source
       run: dotnet nuget remove source GitOwnerSource
     - name: On package push failed
