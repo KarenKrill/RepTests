@@ -9,9 +9,9 @@ permissions:
   contents: write
 
 env:
-  PACKAGE_PROJECT_PATH: ${{ github.workspace }}/SomeClassLibrary/SomeClassLibrary.csproj
-  PACKAGE_DIRECTORY: ${{ github.workspace }}/packages
-  BUILD_CONFIGURATION: Release
+  NUPKG_PROJ_PATH: ${{ github.workspace }}/SomeClassLibrary/SomeClassLibrary.csproj
+  NUPKG_DIR: ./nupackages
+  BUILD_CONFIG: Release
 
 jobs:
   build-and-publish:
@@ -25,27 +25,26 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build ${{ github.workspace }} --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+      run: dotnet build ${{ github.workspace }} --no-restore --configuration ${{ env.BUILD_CONFIG }}
     - name: Package build
-      run: dotnet pack ${{ env.PACKAGE_PROJECT_PATH }} --no-build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.PACKAGE_DIRECTORY }}
-    - name: Add nuget source
-      run: dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.NUGET_PUBLISH_TOKEN }} --store-password-in-clear-text --name GitOwnerSource https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
-    - name: Package push
-      id: PackagePush
-      run: dotnet nuget push ${{ env.PACKAGE_DIRECTORY }}/*.nupkg --source GitOwnerSource --skip-duplicate
-      continue-on-error: true
+      run: dotnet pack ${{ env.NUPKG_PROJ_PATH }} --no-build --no-restore --configuration ${{ env.BUILD_CONFIG }} --output ${{ env.NUPKG_DIR }}
       
     - name: Create archives
       run: |
         tar -czf release-linux.tar.gz **/bin/Release/**
-
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         files: |
           release-linux.tar.gz
-          **/*.nupkg
+          ${{ env.NUPKG_DIR }}/*.nupkg
 
+    - name: Add nuget source
+      run: dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.NUGET_PUBLISH_TOKEN }} --store-password-in-clear-text --name GitOwnerSource https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+    - name: Package push
+      id: PackagePush
+      run: dotnet nuget push ${{ env.NUPKG_DIR }}/*.nupkg --source GitOwnerSource --skip-duplicate
+      continue-on-error: true
     - name: Remove nuget source
       run: dotnet nuget remove source GitOwnerSource
     - name: On package push failed
