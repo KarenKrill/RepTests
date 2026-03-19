@@ -5,6 +5,9 @@ on:
     tags:
       - "*"
 
+permissions:
+  contents: write
+
 env:
   PACKAGE_PROJECT_PATH: ${{ github.workspace }}/SomeClassLibrary/SomeClassLibrary.csproj
   PACKAGE_DIRECTORY: ${{ github.workspace }}/packages
