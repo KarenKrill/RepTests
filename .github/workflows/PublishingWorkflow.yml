@@ -31,6 +31,20 @@ jobs:
       id: PackagePush
       run: dotnet nuget push ${{ env.PACKAGE_DIRECTORY }}/*.nupkg --source GitOwnerSource --skip-duplicate
       continue-on-error: true
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+    - name: Create archives
+      run: |
+        tar -czf release-linux.tar.gz **/bin/Release/**
+
+    - name: Upload to GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          release-linux.tar.gz
+          **/*.nupkg
+
     - name: Remove nuget source
       run: dotnet nuget remove source GitOwnerSource
     - name: On package push failed
