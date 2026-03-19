@@ -38,6 +38,7 @@ jobs:
         files: |
           release-linux.tar.gz
           ${{ env.NUPKG_DIR }}/*.nupkg
+        generate_release_notes: true
 
     - name: Add nuget source
       run: dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.NUGET_PUBLISH_TOKEN }} --store-password-in-clear-text --name GitOwnerSource https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
