@@ -23,7 +23,6 @@ jobs:
     - name: Check if tag is on default branch
       run: |
         DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
-        echo "Default branch: $DEFAULT_BRANCH"
         git fetch origin $DEFAULT_BRANCH
         if git merge-base --is-ancestor $GITHUB_SHA origin/$DEFAULT_BRANCH; then
           echo "IS_DEFAULT_BRANCH=true" >> $GITHUB_ENV
