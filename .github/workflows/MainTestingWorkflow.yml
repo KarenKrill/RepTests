@@ -14,8 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         dotnetVersion:
-          #- 6.0.x
-          - 9.0.x
+          #- 6.x
+          - 9.x
     steps:
     - uses: actions/checkout@v6
     - name: Setup .NET
