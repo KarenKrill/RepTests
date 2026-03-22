@@ -49,14 +49,16 @@ jobs:
       run: dotnet restore --locked-mode
     - name: Build
       run: |
-        NO_V_VERSION=${{ github.ref_name }}
+        VERSION=${{ github.ref_name }}
+        NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
+
         dotnet msbuild /t:Build \
           /p:RestorePackages=false \
           /p:Configuration=${{ env.BUILD_CONFIG }} \
           /p:GeneratePackageOnBuild=false \
-          /p:Version=${{ env.CLEAN_VERSION }}
-          /p:InformationalVersion=${{ github.ref_name }}
+          /p:Version=$CLEAN_VERSION \
+          /p:InformationalVersion=$VERSION \
           /p:Platform="Any CPU" \
     - name: Package build
       run: |
