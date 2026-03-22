@@ -30,11 +30,16 @@ jobs:
         else
           echo "IS_DEFAULT_BRANCH=false" >> $GITHUB_ENV
         fi
+    - name: Check Environment Variable
+      run: echo "ContinuousIntegrationBuild is ${{ env.ContinuousIntegrationBuild }}"
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 9.x
-        cache: false
+        cache: true
+        cache-dependency-path: '**/packages.lock.json'
+    - name: Check Environment Variable 2
+      run: echo "ContinuousIntegrationBuild is ${{ env.ContinuousIntegrationBuild }}"
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
