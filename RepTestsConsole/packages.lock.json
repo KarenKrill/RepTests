@@ -2,8 +2,11 @@
   "version": 1,
   "dependencies": {
     "net9.0": {
-      "someclasslibrary": {
-        "type": "Project"
+      "SomeClassLibrary": {
+        "type": "Direct",
+        "requested": "[1.0.12, )",
+        "resolved": "1.0.12",
+        "contentHash": "vG3YpbshLdOCpaWbzic8ZHgDLvPSkmyaRcxsPwTO02MzPMkIXyVq66ihghSI7Nr1NZspf8WyvTRVCvX/yRUJpg=="
       }
     }
   }
