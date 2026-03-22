@@ -36,6 +36,8 @@ jobs:
       with:
         dotnet-version: 9.x
         cache: false
+    - name: Verify Cache
+      run: ls -R ~/.nuget/packages | head -n 20
     - name: Add GitOwner NuGet Source
       run: |
         dotnet nuget add source \
