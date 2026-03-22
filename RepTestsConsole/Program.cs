@@ -7,7 +7,7 @@
             SomeClassLibrary.SomeClass someClass = new(13);
             someClass.Print();
             Console.WriteLine("Hello, World!");
-            Console.WriteLine("Hello, World!");
+            Console.WriteLine("Hello, World2!");
             Console.WriteLine("Hello, World!");
             Console.WriteLine("Welcome to main branch!");
         }
