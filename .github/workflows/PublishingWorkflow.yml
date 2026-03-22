@@ -49,11 +49,15 @@ jobs:
       run: dotnet restore --locked-mode
     - name: Build
       run: |
-        dotnet build ${{ github.workspace }} \
-        --no-restore \
-        --configuration ${{ env.BUILD_CONFIG }} \
-        -p:GeneratePackageOnBuild=false \
-        /p:Version=${{ github.ref_name }}
+        NO_V_VERSION=${{ github.ref_name }}
+        CLEAN_VERSION=${NO_V_VERSION%%-*}
+        dotnet msbuild /t:Build \
+          /p:RestorePackages=false \
+          /p:Configuration=${{ env.BUILD_CONFIG }} \
+          /p:GeneratePackageOnBuild=false \
+          /p:Version=${{ env.CLEAN_VERSION }}
+          /p:InformationalVersion=${{ github.ref_name }}
+          /p:Platform="Any CPU" \
     - name: Package build
       run: |
         dotnet pack ${{ env.NUPKG_PROJ_PATH }} \
