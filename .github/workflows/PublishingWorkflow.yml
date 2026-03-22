@@ -39,8 +39,6 @@ jobs:
         cache-dependency-path: '**/packages.lock.json'
     - name: Restore dependencies
       run: dotnet restore
-    - name: Check Environment Variable
-      run: dotnet msbuild RepTests.sln -p:Configuration=Release -v:n
     - name: Build
       run: |
         dotnet build ${{ github.workspace }} \
