@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<Version>1.0.12</Version>
+	<IsPackable>true</IsPackable>
     <PackageProjectUrl>https://github.com/KarenKrill/RepTests</PackageProjectUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>SomeClassLibrary</Title>
