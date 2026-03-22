@@ -13,6 +13,7 @@ env:
   NUPKG_DIR: ./nupackages
   NUPKG_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
   BUILD_CONFIG: Release
+  CI_BUILD: true
 
 jobs:
   build-and-publish:
