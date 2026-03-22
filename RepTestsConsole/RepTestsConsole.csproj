@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SomeClassLibrary\SomeClassLibrary.csproj" />
+    <PackageReference Include="SomeClassLibrary" Version="1.0.12" />
   </ItemGroup>
 
 </Project>
