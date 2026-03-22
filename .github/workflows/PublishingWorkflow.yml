@@ -37,6 +37,14 @@ jobs:
         dotnet-version: 9.x
         cache: true
         cache-dependency-path: '**/packages.lock.json'
+    - name: Add GitOwner NuGet Source
+      run: |
+        dotnet nuget add source \
+        --username ${{ github.actor }} \
+        --password ${{ secrets.NUGET_PUBLISH_TOKEN }} \
+        --store-password-in-clear-text \
+        --name GitOwnerSource \
+        ${{ env.NUPKG_SOURCE }}
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -53,7 +61,9 @@ jobs:
         --configuration ${{ env.BUILD_CONFIG }} \
         --output ${{ env.NUPKG_DIR }} \
         /p:Version=${{ github.ref_name }}
-      
+    - name: Cleanup GitOwner NuGet Source
+      if: always()
+      run: dotnet nuget remove source "GitOwnerSource" || true
     - name: Create archives
       run: |
         tar -czf release-linux.tar.gz **/bin/Release/**

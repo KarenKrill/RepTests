@@ -24,9 +24,20 @@ jobs:
         dotnet-version: ${{ matrix.dotnetVersion }}
         cache: true
         cache-dependency-path: '**/packages.lock.json'
+    - name: Add GitOwner NuGet Source
+      run: |
+        dotnet nuget add source \
+        --username ${{ github.actor }} \
+        --password ${{ secrets.NUGET_PUBLISH_TOKEN }} \
+        --store-password-in-clear-text \
+        --name GitOwnerSource \
+        https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build ${{ github.workspace }} --no-restore --configuration Release
+    - name: Cleanup GitOwner NuGet Source
+      if: always()
+      run: dotnet nuget remove source "GitOwnerSource" || true
     - name: Test
       run: dotnet test --no-build --configuration Release --verbosity normal
