@@ -49,7 +49,7 @@ jobs:
     - name: Package build
       run: |
         dotnet pack ${{ env.NUPKG_PROJ_PATH }} \
-        --no-build --no-restore \
+        --no-build \
         --configuration ${{ env.BUILD_CONFIG }} \
         --output ${{ env.NUPKG_DIR }} \
         /p:Version=${{ github.ref_name }}
