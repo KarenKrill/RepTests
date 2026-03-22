@@ -37,7 +37,7 @@ jobs:
         cache: true
         cache-dependency-path: '**/packages.lock.json'
     - name: Check Environment Variable
-      run: msbuild RepTests.sln -p:Configuration=Release -v:n
+      run: dotnet msbuild RepTests.sln -p:Configuration=Release -v:n
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
