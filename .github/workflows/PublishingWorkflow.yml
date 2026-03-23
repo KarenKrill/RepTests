@@ -81,13 +81,13 @@ jobs:
 
             NAME=$(basename "$proj" .csproj)
             DIR=$(dirname "$proj")
-            if [[ "$IS_PACKABLE" == "true" ]]; then
-              echo "Packing NuGet..."
-              dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
-            elif [[ "$OUTPUT_TYPE" == "Exe" ]]; then
+            if [[ "$OUTPUT_TYPE" == "Exe" ]]; then
               echo "Publishing app..."
               dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o ${{ env.ARTIFACTS_DIR }}/$NAME
               tar -czf "$NAME-linux.tar.gz" -C "${{ env.ARTIFACTS_DIR }}/$NAME" .
+            elif [[ "$IS_PACKABLE" == "true" ]]; then
+              echo "Packing NuGet..."
+              dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
             else
               echo "Skipping (non-packable library)"
             fi
