@@ -86,7 +86,7 @@ jobs:
               dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
             elif [[ "$OUTPUT_TYPE" == "Exe" ]]; then
               echo "Publishing app..."
-              dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -r linux-x64 --self-contained false -o ${{ env.ARTIFACTS_DIR }}/$NAME
+              dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o ${{ env.ARTIFACTS_DIR }}/$NAME
               tar -czf "$NAME-linux.tar.gz" -C "${{ env.ARTIFACTS_DIR }}/$NAME" .
             else
               echo "Skipping (non-packable library)"
