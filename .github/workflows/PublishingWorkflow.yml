@@ -78,7 +78,7 @@ jobs:
               if [[ "$OUTPUT_TYPE" == "Exe" ]]; then
                 echo "Publishing app..."
                 dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o ${{ env.ARTIFACTS_DIR }}/$NAME
-                tar -czf "${{ env.ARTIFACTS_DIR }}/$NAME-linux.tar.gz" "${{ env.ARTIFACTS_DIR }}/$NAME"
+                tar -czf "${{ env.ARTIFACTS_DIR }}/$NAME-linux.tar.gz" -C "${{ env.ARTIFACTS_DIR }}/$NAME" .
               elif [[ "$IS_PACKABLE" == "true" ]]; then
                 echo "Packing NuGet..."
                 dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
