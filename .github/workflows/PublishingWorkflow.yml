@@ -85,9 +85,9 @@ jobs:
               NAME=$(basename "$proj" .csproj)
               DIR=$(dirname "$proj")
               DIR=$(dirname "$proj")
-              OUT_DIR=$(dotnet msbuild "$proj" -nologo -property:Configuration=${{ env.BUILD_CONFIG }} -getProperty:OutputPath)
-              FULL_OUT="$DIR/$OUT_DIR"
-              echo "Output: $FULL_OUT"
+              PKG_OUT_DIR=$(dotnet msbuild "$proj" -nologo -property:Configuration=${{ env.BUILD_CONFIG }} -getProperty:PackageOutputPath)
+              FULL_PKG_OUT_DIR="$DIR/$PKG_OUT_DIR"
+              echo "Output: $FULL_PKG_OUT_DIR"
               echo "-> Shipping project $NAME (Packable - $IS_PACKABLE, OutputType - $SHIPPING_TYPE)"
               if [[ "$SHIPPING_TYPE" == "Archive" ]]; then
                 echo "Publishing app..."
@@ -102,7 +102,7 @@ jobs:
                   dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
                 else
                   mkdir -p ${{ env.ARTIFACTS_DIR }}
-                  cp -r -f $FULL_OUT/*.nupkg ${{ env.ARTIFACTS_DIR }}/
+                  cp -r -f $FULL_PKG_OUT_DIR/*.nupkg ${{ env.ARTIFACTS_DIR }}/
                 fi
               else
                 echo "Skipping (non-packable library)"
