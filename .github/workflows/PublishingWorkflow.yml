@@ -10,7 +10,7 @@ permissions:
 
 env:
   NUPKG_PROJ_PATH: ${{ github.workspace }}/SomeClassLibrary/SomeClassLibrary.csproj
-  NUPKG_DIR: ./nupackages
+  ARTIFACTS_DIR: ./nupackages
   NUPKG_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
   BUILD_CONFIG: Release
   CI_BUILD: true
@@ -62,28 +62,46 @@ jobs:
           /p:Version=$CLEAN_VERSION \
           /p:InformationalVersion=$VERSION \
           /p:Platform="Any CPU" \
-    - name: Package build
+
+    - name: Pack and publish
       run: |
-        dotnet pack ${{ env.NUPKG_PROJ_PATH }} \
-        --no-build \
-        --configuration ${{ env.BUILD_CONFIG }} \
-        --output ${{ env.NUPKG_DIR }} \
-        /p:Version=${{ github.ref_name }}
+        shopt -s globstar nullglob
+        for proj in **/*.csproj; do
+            echo "Checking $proj"
+            IS_RELEASE=$(dotnet msbuild "$proj" -nologo -getProperty:IsReleaseProject)
+            OUTPUT_TYPE=$(dotnet msbuild "$proj" -nologo -getProperty:OutputType)
+            IS_PACKABLE=$(dotnet msbuild "$proj" -nologo -getProperty:IsPackable)
+            echo "→ Release project: $NAME"
+            echo "→ Packable: $IS_PACKABLE"
+            echo "→ OutputType: $OUTPUT_TYPE"
+
+            if [[ "$IS_RELEASE" == "false" ]]; then
+              continue
+            fi
+
+            NAME=$(basename "$proj" .csproj)
+            DIR=$(dirname "$proj")
+            if [[ "$IS_PACKABLE" == "true" ]]; then
+              echo "Packing NuGet..."
+              dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
+            elif [[ "$OUTPUT_TYPE" == "Exe" ]]; then
+              echo "Publishing app..."
+              dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -r linux-x64 --self-contained false -o ${{ env.ARTIFACTS_DIR }}/$NAME
+              tar -czf "$NAME-linux.tar.gz" -C ${{ env.ARTIFACTS_DIR }}/$NAME" .
+            else
+              echo "Skipping (non-packable library)"
+            fi
+          done
     - name: Cleanup GitOwner NuGet Source
       if: always()
       run: dotnet nuget remove source "GitOwnerSource" || true
-    - name: Create archives
-      run: |
-        tar -czf release-linux.tar.gz **/bin/Release/**
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2.6.1
       with:
-        files: |
-          release-linux.tar.gz
-          ${{ env.NUPKG_DIR }}/*.nupkg
+        files: ${{ env.ARTIFACTS_DIR }}/*.*
         generate_release_notes: true
         prerelease: ${{ env.IS_DEFAULT_BRANCH != 'true' || contains(github.ref, '-') }}
         
     - name: Package push
       id: PackagePush
-      run: dotnet nuget push ${{ env.NUPKG_DIR }}/*.nupkg --api-key ${{ secrets.NUGET_PUBLISH_TOKEN }} --source ${{ env.NUPKG_SOURCE }} --skip-duplicate
+      run: dotnet nuget push ${{ env.ARTIFACTS_DIR }}/*.nupkg --api-key ${{ secrets.NUGET_PUBLISH_TOKEN }} --source ${{ env.NUPKG_SOURCE }} --skip-duplicate
