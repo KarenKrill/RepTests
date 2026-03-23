@@ -77,9 +77,11 @@ jobs:
         for proj in **/*.csproj; do
             echo "Checking $proj"
             IS_SHIPPING_TARGET=$(dotnet msbuild "$proj" -nologo -getProperty:IsShippingTarget)
+            IS_SHIPPING_TARGET=$(echo "$IS_SHIPPING_TARGET" | tr '[:upper:]' '[:lower:]')
             if [[ "$IS_SHIPPING_TARGET" == "true" ]]; then
               SHIPPING_TYPE=$(dotnet msbuild "$proj" -nologo -getProperty:ShippingType)
               IS_PACKABLE=$(dotnet msbuild "$proj" -nologo -getProperty:IsPackable)
+              IS_PACKABLE=$(echo "$IS_PACKABLE" | tr '[:upper:]' '[:lower:]')
               NAME=$(basename "$proj" .csproj)
               DIR=$(dirname "$proj")
               echo "-> Shipping project $NAME (Packable - $IS_PACKABLE, OutputType - $SHIPPING_TYPE)"
@@ -91,6 +93,7 @@ jobs:
               elif [[ "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" ]]; then
                 echo "Packing NuGet..."
                 IS_ALREADY_PACKED=$(dotnet msbuild "$proj" -nologo -getProperty:GeneratePackageOnBuild)
+                IS_ALREADY_PACKED=$(echo "$IS_ALREADY_PACKED" | tr '[:upper:]' '[:lower:]')
                 if [[ "$IS_ALREADY_PACKED" != "true" ]]; then
                   dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
                 else
