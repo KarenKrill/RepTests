@@ -68,28 +68,23 @@ jobs:
         shopt -s globstar nullglob
         for proj in **/*.csproj; do
             echo "Checking $proj"
-            IS_RELEASE=$(dotnet msbuild "$proj" -nologo -getProperty:IsReleaseProject)
-            OUTPUT_TYPE=$(dotnet msbuild "$proj" -nologo -getProperty:OutputType)
-            IS_PACKABLE=$(dotnet msbuild "$proj" -nologo -getProperty:IsPackable)
-            echo "→ Release project: $NAME"
-            echo "→ Packable: $IS_PACKABLE"
-            echo "→ OutputType: $OUTPUT_TYPE"
-
-            if [[ "$IS_RELEASE" == "false" ]]; then
-              continue
-            fi
-
-            NAME=$(basename "$proj" .csproj)
-            DIR=$(dirname "$proj")
-            if [[ "$OUTPUT_TYPE" == "Exe" ]]; then
-              echo "Publishing app..."
-              dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o ${{ env.ARTIFACTS_DIR }}/$NAME
-              tar -czf "${{ env.ARTIFACTS_DIR }}/$NAME-linux.tar.gz" "${{ env.ARTIFACTS_DIR }}/$NAME"
-            elif [[ "$IS_PACKABLE" == "true" ]]; then
-              echo "Packing NuGet..."
-              dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
-            else
-              echo "Skipping (non-packable library)"
+            IS_SHIPPING_TARGET=$(dotnet msbuild "$proj" -nologo -getProperty:IsShippingTarget)
+            if [[ "$IS_SHIPPING_TARGET" == "true" ]]; then
+              OUTPUT_TYPE=$(dotnet msbuild "$proj" -nologo -getProperty:OutputType)
+              IS_PACKABLE=$(dotnet msbuild "$proj" -nologo -getProperty:IsPackable)
+              echo "-> Shipping project $NAME (Packable - $IS_PACKABLE, OutputType - $OUTPUT_TYPE)"
+              NAME=$(basename "$proj" .csproj)
+              DIR=$(dirname "$proj")
+              if [[ "$OUTPUT_TYPE" == "Exe" ]]; then
+                echo "Publishing app..."
+                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o ${{ env.ARTIFACTS_DIR }}/$NAME
+                tar -czf "${{ env.ARTIFACTS_DIR }}/$NAME-linux.tar.gz" "${{ env.ARTIFACTS_DIR }}/$NAME"
+              elif [[ "$IS_PACKABLE" == "true" ]]; then
+                echo "Packing NuGet..."
+                dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
+              else
+                echo "Skipping (non-packable library)"
+              fi
             fi
           done
     - name: Cleanup GitOwner NuGet Source
