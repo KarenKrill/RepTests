@@ -13,6 +13,7 @@ env:
   NUPKG_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
   BUILD_CONFIG: Release
   CI_BUILD: true
+  IS_MS_BUILD: false
 
 jobs:
   build-and-publish:
@@ -49,7 +50,8 @@ jobs:
     - name: Cleanup GitOwner NuGet Source
       if: always()
       run: dotnet nuget remove source "GitOwnerSource" || true
-    - name: Build
+    - name: MSBuild
+      if: ${{ env.IS_MS_BUILD }} == 'true'
       run: |
         VERSION=${{ github.ref_name }}
         NO_V_VERSION=${VERSION#v}
@@ -57,10 +59,17 @@ jobs:
         dotnet msbuild /t:Build \
           /p:RestorePackages=false \
           /p:Configuration=${{ env.BUILD_CONFIG }} \
-          /p:GeneratePackageOnBuild=false \
           /p:Version=$CLEAN_VERSION \
           /p:InformationalVersion=$VERSION \
           /p:Platform="Any CPU" \
+    - name: Build
+      if: ${{ env.IS_MS_BUILD }} != 'true'
+      run: |
+        dotnet build ${{ github.workspace }} \
+        --no-restore \
+        --configuration ${{ env.BUILD_CONFIG }} \
+        /p:Version=${{ github.ref_name }} \
+        /p:Platform="Any CPU"
 
     - name: Pack and publish
       run: |
@@ -69,18 +78,25 @@ jobs:
             echo "Checking $proj"
             IS_SHIPPING_TARGET=$(dotnet msbuild "$proj" -nologo -getProperty:IsShippingTarget)
             if [[ "$IS_SHIPPING_TARGET" == "true" ]]; then
-              OUTPUT_TYPE=$(dotnet msbuild "$proj" -nologo -getProperty:OutputType)
+              SHIPPING_TYPE=$(dotnet msbuild "$proj" -nologo -getProperty:ShippingType)
               IS_PACKABLE=$(dotnet msbuild "$proj" -nologo -getProperty:IsPackable)
               NAME=$(basename "$proj" .csproj)
-              echo "-> Shipping project $NAME (Packable - $IS_PACKABLE, OutputType - $OUTPUT_TYPE)"
-              if [[ "$OUTPUT_TYPE" == "Exe" ]]; then
+              DIR=$(dirname "$proj")
+              echo "-> Shipping project $NAME (Packable - $IS_PACKABLE, OutputType - $SHIPPING_TYPE)"
+              if [[ "$SHIPPING_TYPE" == "Archive" ]]; then
                 echo "Publishing app..."
                 APP_ARTIFACTS_DIR=${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.linux
                 dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o $APP_ARTIFACTS_DIR
                 (cd "$APP_ARTIFACTS_DIR" && tar -czf "$APP_ARTIFACTS_DIR.tar.gz" *)
-              elif [[ "$IS_PACKABLE" == "true" ]]; then
+              elif [[ "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" ]]; then
                 echo "Packing NuGet..."
-                dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
+                IS_ALREADY_PACKED=$(dotnet msbuild "$proj" -nologo -getProperty:GeneratePackageOnBuild)
+                if [[ "$IS_ALREADY_PACKED" != "true" ]]; then
+                  dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
+                else
+                  mkdir -p ${{ env.ARTIFACTS_DIR }}
+                  cp -r -f $DIR/bin/${{ env.BUILD_CONFIG }}/*.nupkg ${{ env.ARTIFACTS_DIR }}/
+                fi
               else
                 echo "Skipping (non-packable library)"
               fi

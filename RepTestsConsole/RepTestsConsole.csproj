@@ -6,9 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<Version>1.0.13</Version>
-	<IsShippingTarget>true</IsShippingTarget>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<IsShippingTarget>true</IsShippingTarget>
+	<ShippingType>Archive</ShippingType>
+  </PropertyGroup>
+	
   <ItemGroup>
     <PackageReference Include="SomeClassLibrary" Version="1.0.12" />
   </ItemGroup>
