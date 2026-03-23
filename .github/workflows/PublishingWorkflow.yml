@@ -9,7 +9,6 @@ permissions:
   contents: write
 
 env:
-  NUPKG_PROJ_PATH: ${{ github.workspace }}/SomeClassLibrary/SomeClassLibrary.csproj
   ARTIFACTS_DIR: ${{ github.workspace }}/bin/Release
   NUPKG_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
   BUILD_CONFIG: Release
@@ -37,8 +36,6 @@ jobs:
         dotnet-version: 9.x
         cache: true
         cache-dependency-path: '**/packages.lock.json'
-    - name: Verify Cache
-      run: ls -R ~/.nuget/packages | head -n 20
     - name: Add GitOwner NuGet Source
       run: |
         dotnet nuget add source \
@@ -49,12 +46,14 @@ jobs:
         ${{ env.NUPKG_SOURCE }}
     - name: Restore dependencies
       run: dotnet restore --locked-mode
+    - name: Cleanup GitOwner NuGet Source
+      if: always()
+      run: dotnet nuget remove source "GitOwnerSource" || true
     - name: Build
       run: |
         VERSION=${{ github.ref_name }}
         NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
-
         dotnet msbuild /t:Build \
           /p:RestorePackages=false \
           /p:Configuration=${{ env.BUILD_CONFIG }} \
@@ -77,8 +76,9 @@ jobs:
               DIR=$(dirname "$proj")
               if [[ "$OUTPUT_TYPE" == "Exe" ]]; then
                 echo "Publishing app..."
-                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o ${{ env.ARTIFACTS_DIR }}/$NAME
-                tar -czf "${{ env.ARTIFACTS_DIR }}/$NAME-linux.tar.gz" -C "${{ env.ARTIFACTS_DIR }}/$NAME" .
+                APP_ARTIFACTS_DIR=${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.linux
+                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o $APP_ARTIFACTS_DIR
+                tar -czf "$APP_ARTIFACTS_DIR.tar.gz" -C "$APP_ARTIFACTS_DIR" .
               elif [[ "$IS_PACKABLE" == "true" ]]; then
                 echo "Packing NuGet..."
                 dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
@@ -87,9 +87,6 @@ jobs:
               fi
             fi
           done
-    - name: Cleanup GitOwner NuGet Source
-      if: always()
-      run: dotnet nuget remove source "GitOwnerSource" || true
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2.6.1
       with:
