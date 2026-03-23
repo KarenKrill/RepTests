@@ -64,7 +64,7 @@ jobs:
 
     - name: Pack and publish
       run: |
-        shopt -s globstar nullglob
+        shopt -s globstar nullglob dotglob
         for proj in **/*.csproj; do
             echo "Checking $proj"
             IS_SHIPPING_TARGET=$(dotnet msbuild "$proj" -nologo -getProperty:IsShippingTarget)
@@ -77,7 +77,7 @@ jobs:
                 echo "Publishing app..."
                 APP_ARTIFACTS_DIR=${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.linux
                 dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o $APP_ARTIFACTS_DIR
-                tar -czf "$APP_ARTIFACTS_DIR.tar.gz" -C "$APP_ARTIFACTS_DIR" .
+                (cd "$APP_ARTIFACTS_DIR" && tar -czf "$APP_ARTIFACTS_DIR.tar.gz" *)
               elif [[ "$IS_PACKABLE" == "true" ]]; then
                 echo "Packing NuGet..."
                 dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
