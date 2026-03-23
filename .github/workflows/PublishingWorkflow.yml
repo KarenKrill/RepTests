@@ -84,7 +84,6 @@ jobs:
               IS_PACKABLE=$(echo "$IS_PACKABLE" | tr '[:upper:]' '[:lower:]')
               NAME=$(basename "$proj" .csproj)
               DIR=$(dirname "$proj")
-              DIR=$(dirname "$proj")
               PKG_OUT_DIR=$(dotnet msbuild "$proj" -nologo -property:Configuration=${{ env.BUILD_CONFIG }} -getProperty:PackageOutputPath)
               FULL_PKG_OUT_DIR="$DIR/$PKG_OUT_DIR"
               echo "Output: $FULL_PKG_OUT_DIR"
@@ -102,7 +101,7 @@ jobs:
                   dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
                 else
                   mkdir -p ${{ env.ARTIFACTS_DIR }}
-                  cp -r -f $FULL_PKG_OUT_DIR/*.nupkg ${{ env.ARTIFACTS_DIR }}/
+                  cp -r -f $FULL_PKG_OUT_DIR/*.* ${{ env.ARTIFACTS_DIR }}/
                 fi
               else
                 echo "Skipping (non-packable library)"
