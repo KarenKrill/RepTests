@@ -10,7 +10,7 @@ permissions:
 
 env:
   NUPKG_PROJ_PATH: ${{ github.workspace }}/SomeClassLibrary/SomeClassLibrary.csproj
-  ARTIFACTS_DIR: ./nupackages
+  ARTIFACTS_DIR: ${{ github.workspace }}/bin/Release
   NUPKG_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
   BUILD_CONFIG: Release
   CI_BUILD: true
