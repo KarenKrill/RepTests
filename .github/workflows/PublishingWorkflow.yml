@@ -18,6 +18,12 @@ env:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnetVersion:
+          - 6.x
+          - 10.x
     steps:
     - uses: actions/checkout@v6
       with:
@@ -34,7 +40,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 9.x
+        dotnet-version: ${{ matrix.dotnetVersion }}
         cache: true
         cache-dependency-path: '**/packages.lock.json'
     - name: Add GitOwner NuGet Source
