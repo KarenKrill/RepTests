@@ -67,20 +67,20 @@ jobs:
         NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
         dotnet msbuild /t:Build \
-          /p:RestorePackages=false \
-          /p:Configuration=${{ env.BUILD_CONFIG }} \
-          /p:Version=$CLEAN_VERSION \
-          /p:InformationalVersion=$VERSION \
-          /p:Platform="Any CPU" \
+          --property:RestorePackages=false \
+          --property:Configuration=${{ env.BUILD_CONFIG }} \
+          --property:Version=$CLEAN_VERSION \
+          --property:InformationalVersion=$VERSION \
+          --property:Platform="Any CPU" \
     - name: Build
       if: env.IS_MS_BUILD != 'true'
       shell: bash
       run: |
-        dotnet build ${{ github.workspace }} \
+        dotnet build "${{ github.workspace }}" \
         --no-restore \
         --configuration ${{ env.BUILD_CONFIG }} \
-        /p:Version=${{ github.ref_name }} \
-        /p:Platform="Any CPU"
+        --property:Version="${{ github.ref_name }}" \
+        --property:Platform="Any CPU"
 
     - name: Pack and publish
       shell: bash
@@ -110,7 +110,7 @@ jobs:
                 IS_ALREADY_PACKED=$(dotnet msbuild "$proj" -nologo -getProperty:GeneratePackageOnBuild)
                 IS_ALREADY_PACKED=$(echo "$IS_ALREADY_PACKED" | tr '[:upper:]' '[:lower:]')
                 if [[ "$IS_ALREADY_PACKED" != "true" ]]; then
-                  dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
+                  dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} --property:Version=${{ github.ref_name }}
                 else
                   mkdir -p ${{ env.ARTIFACTS_DIR }}
                   cp -r -f $FULL_PKG_OUT_DIR/*.* ${{ env.ARTIFACTS_DIR }}/
