@@ -1,4 +1,4 @@
-name: LinuxPublishing
+name: Publishing
 
 on:
   push:
@@ -17,18 +17,20 @@ env:
 
 jobs:
   build-and-publish:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        dotnetVersion:
-          - 6.x
-          - 10.x
+        os: [ ubuntu-latest, windows-latest ]
+        dotnetVersion: [ 6.x, 10.x ]
+
+    runs-on: ${{ matrix.os }}
+
     steps:
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
     - name: Check if tag is on default branch
+      shell: bash
       run: |
         DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
         git fetch origin $DEFAULT_BRANCH
@@ -58,6 +60,7 @@ jobs:
       run: dotnet nuget remove source "GitOwnerSource" || true
     - name: MSBuild
       if: env.IS_MS_BUILD == 'true'
+      shell: bash
       run: |
         VERSION=${{ github.ref_name }}
         NO_V_VERSION=${VERSION#v}
@@ -78,6 +81,7 @@ jobs:
         /p:Platform="Any CPU"
 
     - name: Pack and publish
+      shell: bash
       run: |
         shopt -s globstar nullglob dotglob
         for proj in **/*.csproj; do
@@ -96,10 +100,10 @@ jobs:
               echo "-> Shipping project $NAME (Packable - $IS_PACKABLE, OutputType - $SHIPPING_TYPE)"
               if [[ "$SHIPPING_TYPE" == "Archive" ]]; then
                 echo "Publishing app..."
-                APP_ARTIFACTS_DIR=${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.linux
-                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o $APP_ARTIFACTS_DIR
+                APP_ARTIFACTS_DIR=${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.${{ matrix.os }}
+                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --no-self-contained -o $APP_ARTIFACTS_DIR
                 (cd "$APP_ARTIFACTS_DIR" && tar -czf "$APP_ARTIFACTS_DIR.tar.gz" *)
-              elif [[ "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" ]]; then
+              elif [[ "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" && ${{ matrix.os }} == "ubuntu-latest" ]]; then
                 echo "Packing NuGet..."
                 IS_ALREADY_PACKED=$(dotnet msbuild "$proj" -nologo -getProperty:GeneratePackageOnBuild)
                 IS_ALREADY_PACKED=$(echo "$IS_ALREADY_PACKED" | tr '[:upper:]' '[:lower:]')
