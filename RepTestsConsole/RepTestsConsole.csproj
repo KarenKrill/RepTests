@@ -2,12 +2,18 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<Version>1.0.13</Version>
+	<Version>1.1.0</Version>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<IsShippingTarget>true</IsShippingTarget>
+	<ShippingType>Archive</ShippingType>
+  </PropertyGroup>
+	
   <ItemGroup>
     <PackageReference Include="SomeClassLibrary" Version="1.0.12" />
   </ItemGroup>
