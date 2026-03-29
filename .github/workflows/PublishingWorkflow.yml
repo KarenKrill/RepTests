@@ -102,8 +102,8 @@ jobs:
               echo "-> Shipping project $NAME (Packable - $IS_PACKABLE, OutputType - $SHIPPING_TYPE)"
               if [[ "$SHIPPING_TYPE" == "Archive" ]]; then
                 echo "Publishing app..."
-                APP_ARTIFACTS_DIR=${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.${{ matrix.os }}
-                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --no-self-contained -o $APP_ARTIFACTS_DIR
+                APP_ARTIFACTS_DIR="${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.${{ matrix.os }}"
+                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --no-self-contained -o "$APP_ARTIFACTS_DIR"
                 (cd "$APP_ARTIFACTS_DIR" && tar -czf "$APP_ARTIFACTS_DIR.tar.gz" *)
               elif [[ "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" && ${{ matrix.os }} == "ubuntu-latest" ]]; then
                 echo "Packing NuGet..."
