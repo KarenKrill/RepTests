@@ -48,7 +48,7 @@ jobs:
         dotnet-version: ${{ matrix.dotnetVersion }}
         cache: true
         cache-dependency-path: '**/packages.lock.json'
-        source-url: ${{ env.NUPKG_SOURCE }}/index.json
+        source-url: ${{ env.NUPKG_SOURCE }}
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore dependencies
