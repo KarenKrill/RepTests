@@ -104,7 +104,8 @@ jobs:
                 echo "Publishing app..."
                 APP_ARTIFACTS_DIR="${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.${{ matrix.os }}"
                 dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --no-self-contained -o "$APP_ARTIFACTS_DIR"
-                tar -czf "${APP_ARTIFACTS_DIR}.tar.gz" -C "${APP_ARTIFACTS_DIR}" .
+                ZIP_NAME=$(basename "$APP_ARTIFACTS_DIR")
+                tar --force-local -czf "${ZIP_NAME}.tar.gz" -C "${ZIP_NAME}" .
               elif [[ "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" && ${{ matrix.os }} == "ubuntu-latest" ]]; then
                 echo "Packing NuGet..."
                 IS_ALREADY_PACKED=$(dotnet msbuild "$proj" -nologo -getProperty:GeneratePackageOnBuild)
