@@ -1,4 +1,4 @@
-name: LinuxPublishing
+name: Publishing
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 env:
   ARTIFACTS_DIR: ${{ github.workspace }}/bin/Release
@@ -14,21 +15,24 @@ env:
   BUILD_CONFIG: Release
   CI_BUILD: true
   IS_MS_BUILD: false
+  NUGET_JOB_INDEX: 0
 
 jobs:
   build-and-publish:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        dotnetVersion:
-          - 6.x
-          - 10.x
+        os: [ ubuntu-latest, windows-latest ]
+        dotnetVersion: [ 10.x, 6.x ]
+
+    runs-on: ${{ matrix.os }}
+
     steps:
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
     - name: Check if tag is on default branch
+      shell: bash
       run: |
         DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
         git fetch origin $DEFAULT_BRANCH
@@ -43,41 +47,36 @@ jobs:
         dotnet-version: ${{ matrix.dotnetVersion }}
         cache: true
         cache-dependency-path: '**/packages.lock.json'
-    - name: Add GitOwner NuGet Source
-      run: |
-        dotnet nuget add source \
-        --username ${{ github.actor }} \
-        --password ${{ secrets.NUGET_PUBLISH_TOKEN }} \
-        --store-password-in-clear-text \
-        --name GitOwnerSource \
-        ${{ env.NUPKG_SOURCE }}
+        source-url: ${{ env.NUPKG_SOURCE }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore dependencies
       run: dotnet restore --locked-mode
-    - name: Cleanup GitOwner NuGet Source
-      if: always()
-      run: dotnet nuget remove source "GitOwnerSource" || true
     - name: MSBuild
       if: env.IS_MS_BUILD == 'true'
+      shell: bash
       run: |
         VERSION=${{ github.ref_name }}
         NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
         dotnet msbuild /t:Build \
-          /p:RestorePackages=false \
-          /p:Configuration=${{ env.BUILD_CONFIG }} \
-          /p:Version=$CLEAN_VERSION \
-          /p:InformationalVersion=$VERSION \
-          /p:Platform="Any CPU" \
+          --property:RestorePackages=false \
+          --property:Configuration=${{ env.BUILD_CONFIG }} \
+          --property:Version=$CLEAN_VERSION \
+          --property:InformationalVersion=$VERSION \
+          --property:Platform="Any CPU" \
     - name: Build
       if: env.IS_MS_BUILD != 'true'
+      shell: bash
       run: |
-        dotnet build ${{ github.workspace }} \
+        dotnet build "${{ github.workspace }}" \
         --no-restore \
         --configuration ${{ env.BUILD_CONFIG }} \
-        /p:Version=${{ github.ref_name }} \
-        /p:Platform="Any CPU"
+        --property:Version="${{ github.ref_name }}" \
+        --property:Platform="Any CPU"
 
     - name: Pack and publish
+      shell: bash
       run: |
         shopt -s globstar nullglob dotglob
         for proj in **/*.csproj; do
@@ -92,35 +91,40 @@ jobs:
               DIR=$(dirname "$proj")
               PKG_OUT_DIR=$(dotnet msbuild "$proj" -nologo -property:Configuration=${{ env.BUILD_CONFIG }} -getProperty:PackageOutputPath)
               FULL_PKG_OUT_DIR="$DIR/$PKG_OUT_DIR"
-              echo "Output: $FULL_PKG_OUT_DIR"
-              echo "-> Shipping project $NAME (Packable - $IS_PACKABLE, OutputType - $SHIPPING_TYPE)"
               if [[ "$SHIPPING_TYPE" == "Archive" ]]; then
-                echo "Publishing app..."
-                APP_ARTIFACTS_DIR=${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.linux
-                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --self-contained false -o $APP_ARTIFACTS_DIR
-                (cd "$APP_ARTIFACTS_DIR" && tar -czf "$APP_ARTIFACTS_DIR.tar.gz" *)
-              elif [[ "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" ]]; then
-                echo "Packing NuGet..."
+                echo "Publishing app $NAME..."
+                DOTNET_MAJOR=$(echo "${{ matrix.dotnetVersion }}" | cut -d. -f1)
+                APP_ARTIFACTS_DIR="${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.net$DOTNET_MAJOR.${{ runner.os }}"
+                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --no-self-contained -o "$APP_ARTIFACTS_DIR"
+                ZIP_NAME=$(basename "$APP_ARTIFACTS_DIR")
+                (
+                  cd "${{ env.ARTIFACTS_DIR }}" || exit 1
+                  tar --force-local -czf "${ZIP_NAME}.tar.gz" -C "${ZIP_NAME}" .
+                )
+              elif [[ ${{ strategy.job-index }} == ${{ env.NUGET_JOB_INDEX }} && "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" ]]; then
+                echo "Packing NuGet $NAME..."
                 IS_ALREADY_PACKED=$(dotnet msbuild "$proj" -nologo -getProperty:GeneratePackageOnBuild)
                 IS_ALREADY_PACKED=$(echo "$IS_ALREADY_PACKED" | tr '[:upper:]' '[:lower:]')
                 if [[ "$IS_ALREADY_PACKED" != "true" ]]; then
-                  dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} /p:Version=${{ github.ref_name }}
+                  dotnet pack "$proj" --no-build -c ${{ env.BUILD_CONFIG }} -o ${{ env.ARTIFACTS_DIR }} --property:Version=${{ github.ref_name }}
                 else
                   mkdir -p ${{ env.ARTIFACTS_DIR }}
                   cp -r -f $FULL_PKG_OUT_DIR/*.* ${{ env.ARTIFACTS_DIR }}/
                 fi
               else
-                echo "Skipping (non-packable library)"
+                echo "Skipping $NAME (non-packable library)"
               fi
             fi
           done
     - name: Upload to GitHub Release
-      uses: softprops/action-gh-release@v2.6.1
+      uses: softprops/action-gh-release@v3
       with:
         files: ${{ env.ARTIFACTS_DIR }}/*.*
-        generate_release_notes: true
+        generate_release_notes: ${{ strategy.job-index == 0 }}
+        append_body: false
         prerelease: ${{ env.IS_DEFAULT_BRANCH != 'true' || contains(github.ref, '-') }}
         
     - name: Package push
+      if: strategy.job-index == env.NUGET_JOB_INDEX
       id: PackagePush
-      run: dotnet nuget push ${{ env.ARTIFACTS_DIR }}/*.nupkg --api-key ${{ secrets.NUGET_PUBLISH_TOKEN }} --source ${{ env.NUPKG_SOURCE }} --skip-duplicate
+      run: dotnet nuget push ${{ env.ARTIFACTS_DIR }}/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.NUPKG_SOURCE }} --skip-duplicate
