@@ -110,7 +110,7 @@ jobs:
                 ZIP_NAME=$(basename "$APP_ARTIFACTS_DIR")
                 echo "Archiving to $ZIP_NAME"
                 cd "${{ env.ARTIFACTS_DIR }}"
-                $CUR_DIR=$(pwd)
+                CUR_DIR=$(pwd)
                 echo "CurDir is $CUR_DIR"
                 tar --force-local -czf "${ZIP_NAME}.tar.gz" -C "${ZIP_NAME}" .
                 echo "Archived to ${ZIP_NAME}.tar.gz"
