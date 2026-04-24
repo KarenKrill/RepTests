@@ -103,8 +103,9 @@ jobs:
               if [[ "$SHIPPING_TYPE" == "Archive" ]]; then
                 echo "Publishing app..."
                 DOTNET_MAJOR=$(echo "${{ matrix.dotnetVersion }}" | cut -d. -f1)
-                APP_ARTIFACTS_DIR="${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.$DOTNET_MAJOR.${{ runner.os }}"
+                APP_ARTIFACTS_DIR="${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.net$DOTNET_MAJOR.${{ runner.os }}"
                 dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --no-self-contained -o "$APP_ARTIFACTS_DIR"
+                cd "${{ env.ARTIFACTS_DIR }}"
                 ZIP_NAME=$(basename "$APP_ARTIFACTS_DIR")
                 tar --force-local -czf "${ZIP_NAME}.tar.gz" -C "${ZIP_NAME}" .
               elif [[ "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" && ${{ matrix.os }} == "ubuntu-latest" ]]; then
