@@ -1,0 +1,38 @@
+name: Testing
+
+on:
+  push:
+    branches: [ "dev", "main" ]
+  pull_request:
+    branches: [ "dev", "main" ]
+    #types: [opened, reopened, synchronize]
+  workflow_dispatch: # to run manually
+
+env:  
+  buildConfig: ${{ github.ref_name == 'main' && 'Release' || 'Debug' }}
+
+jobs:
+  build-and-test:
+    name: Ubuntu Testing
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        dotnetVersion: [ 10.x, 6.x ]
+    steps:
+    - uses: actions/checkout@v6
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: ${{ matrix.dotnetVersion }}
+        cache: true
+        cache-dependency-path: '**/packages.lock.json'
+        source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Restore dependencies
+      run: dotnet restore --locked-mode
+    - name: Build
+      run: dotnet build ${{ github.workspace }} --no-restore --configuration ${{ env.buildConfig }}
+    - name: Test
+      run: dotnet test --no-build --configuration ${{ env.buildConfig }} --verbosity normal
