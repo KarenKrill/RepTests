@@ -101,21 +101,17 @@ jobs:
               echo "Output: $FULL_PKG_OUT_DIR"
               echo "-> Shipping project $NAME (Packable - $IS_PACKABLE, OutputType - $SHIPPING_TYPE)"
               if [[ "$SHIPPING_TYPE" == "Archive" ]]; then
-                echo "Publishing app..."
+                echo "Publishing app $NAME..."
                 DOTNET_MAJOR=$(echo "${{ matrix.dotnetVersion }}" | cut -d. -f1)
                 APP_ARTIFACTS_DIR="${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.net$DOTNET_MAJOR.${{ runner.os }}"
-                echo "Publishing to $APP_ARTIFACTS_DIR..."
                 dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --no-self-contained -o "$APP_ARTIFACTS_DIR"
-                echo "Published to $APP_ARTIFACTS_DIR"
                 ZIP_NAME=$(basename "$APP_ARTIFACTS_DIR")
-                echo "Archiving to $ZIP_NAME"
                 (
                   cd "${{ env.ARTIFACTS_DIR }}" || exit 1
                   tar --force-local -czf "${ZIP_NAME}.tar.gz" -C "${ZIP_NAME}" .
                 )
-                echo "Archived to ${ZIP_NAME}.tar.gz"
               elif [[ "$SHIPPING_TYPE" == "NuGet" && "$IS_PACKABLE" == "true" && ${{ matrix.os }} == "ubuntu-latest" ]]; then
-                echo "Packing NuGet..."
+                echo "Packing NuGet $NAME..."
                 IS_ALREADY_PACKED=$(dotnet msbuild "$proj" -nologo -getProperty:GeneratePackageOnBuild)
                 IS_ALREADY_PACKED=$(echo "$IS_ALREADY_PACKED" | tr '[:upper:]' '[:lower:]')
                 if [[ "$IS_ALREADY_PACKED" != "true" ]]; then
@@ -125,7 +121,7 @@ jobs:
                   cp -r -f $FULL_PKG_OUT_DIR/*.* ${{ env.ARTIFACTS_DIR }}/
                 fi
               else
-                echo "Skipping (non-packable library)"
+                echo "Skipping $NAME (non-packable library)"
               fi
             fi
           done
@@ -134,8 +130,10 @@ jobs:
       with:
         files: ${{ env.ARTIFACTS_DIR }}/*.*
         generate_release_notes: true
+        append_body: false
         prerelease: ${{ env.IS_DEFAULT_BRANCH != 'true' || contains(github.ref, '-') }}
         
     - name: Package push
+      if: matrix.os == 'ubuntu-latest' && matrix.dotnetVersion == '10.x'
       id: PackagePush
       run: dotnet nuget push ${{ env.ARTIFACTS_DIR }}/*.nupkg --api-key ${{ secrets.NUGET_PUBLISH_TOKEN }} --source ${{ env.NUPKG_SOURCE }} --skip-duplicate
