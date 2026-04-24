@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 env:
   ARTIFACTS_DIR: ${{ github.workspace }}/bin/Release
@@ -47,20 +48,11 @@ jobs:
         dotnet-version: ${{ matrix.dotnetVersion }}
         cache: true
         cache-dependency-path: '**/packages.lock.json'
-    - name: Add GitOwner NuGet Source
-      shell: bash
-      run: |
-        dotnet nuget add source \
-        --username ${{ github.actor }} \
-        --password ${{ secrets.NUGET_PUBLISH_TOKEN }} \
-        --store-password-in-clear-text \
-        --name GitOwnerSource \
-        ${{ env.NUPKG_SOURCE }}
+        source-url: ${{ env.NUPKG_SOURCE }}/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore dependencies
       run: dotnet restore --locked-mode
-    - name: Cleanup GitOwner NuGet Source
-      if: always()
-      run: dotnet nuget remove source "GitOwnerSource" || true
     - name: MSBuild
       if: env.IS_MS_BUILD == 'true'
       shell: bash
@@ -136,4 +128,4 @@ jobs:
     - name: Package push
       if: matrix.os == env.NUGET_OS && matrix.dotnetVersion == env.NUGET_DOTNET
       id: PackagePush
-      run: dotnet nuget push ${{ env.ARTIFACTS_DIR }}/*.nupkg --api-key ${{ secrets.NUGET_PUBLISH_TOKEN }} --source ${{ env.NUPKG_SOURCE }} --skip-duplicate
+      run: dotnet nuget push ${{ env.ARTIFACTS_DIR }}/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.NUPKG_SOURCE }} --skip-duplicate
