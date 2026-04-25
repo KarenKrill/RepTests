@@ -30,9 +30,11 @@ jobs:
         dotnetVersion: [ 10.x, 6.x ]
 
     runs-on: ${{ matrix.os }}
-    if: "vars.IS_MS_BUILD != 'true' || matrix.os == 'windows-latest'"
 
     steps:
+    - name: Cancel job if it's MSBuild on non-Windows
+      if: ! env.IS_MS_BUILD || matrix.is_windows
+      run: exit 0
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
