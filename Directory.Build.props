@@ -4,7 +4,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <!-- Disables implicit fallback folders to ensure all packages are cached -->
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
-    <!-- Drops CI build if project dependencies do not match lock-file -->
-    <!-- RestoreLockedMode Condition="'$(CI_BUILD)' == 'true'">true</RestoreLockedMode-->
+    <!-- Drops build if project dependencies do not match lock-file -->
+    <!--<RestoreLockedMode>true</RestoreLockedMode>-->
   </PropertyGroup>
 </Project>
