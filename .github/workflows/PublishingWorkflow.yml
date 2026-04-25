@@ -58,6 +58,7 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore dependencies
+      shell: bash
       run: |
         TARGET_FRAMEWORK="net$(echo ${{ matrix.dotnetVersion }} | cut -d. -f1).0"
         dotnet restore --locked-mode --property:TargetFramework=$TARGET_FRAMEWORK
