@@ -11,6 +11,17 @@
       "somenativelib": {
         "type": "Project"
       }
+    },
+    "net6.0": {
+      "someclasslibrary": {
+        "type": "Project",
+        "dependencies": {
+          "SomeNativeLib": "[1.0.0, )"
+        }
+      },
+      "somenativelib": {
+        "type": "Project"
+      }
     }
   }
 }

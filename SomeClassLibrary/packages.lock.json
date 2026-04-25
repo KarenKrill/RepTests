@@ -5,6 +5,11 @@
       "somenativelib": {
         "type": "Project"
       }
+    },
+    "net6.0": {
+      "somenativelib": {
+        "type": "Project"
+      }
     }
   }
 }
