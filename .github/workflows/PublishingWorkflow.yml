@@ -34,7 +34,7 @@ jobs:
     steps:
     - name: Cancel job if it's MSBuild on non-Windows
       if: ! env.IS_MS_BUILD || matrix.is_windows
-      run: exit 0
+      run: exit 1
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
@@ -72,7 +72,7 @@ jobs:
         NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
         for solution in **/*.sln; do
-          msbuild $solution \
+          MSBuild $solution \
             /t:Build \
             --property:RestorePackages=false \
             --property:Configuration=${{ env.BUILD_CONFIG }} \
