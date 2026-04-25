@@ -20,7 +20,18 @@
   <PropertyGroup>
 	<IsShippingTarget>true</IsShippingTarget>
 	<ShippingType>NuGet</ShippingType>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+	
+  <ItemGroup>
+    <None Include="..\x64\Release\SomeNativeLib.dll" Link="SomeNativeLib.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+	
+  <ItemGroup>
+    <ProjectReference Include="..\SomeNativeLib\SomeNativeLib.vcxproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Update="ReadMe.md">

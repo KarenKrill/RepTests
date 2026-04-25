@@ -15,7 +15,11 @@
   </PropertyGroup>
 	
   <ItemGroup>
-    <PackageReference Include="SomeClassLibrary" Version="1.0.12" />
+    <!--<PackageReference Include="SomeClassLibrary" Version="1.0.12" />-->
+  </ItemGroup>
+	
+  <ItemGroup>
+    <ProjectReference Include="..\SomeClassLibrary\SomeClassLibrary.csproj" />
   </ItemGroup>
 
 </Project>
