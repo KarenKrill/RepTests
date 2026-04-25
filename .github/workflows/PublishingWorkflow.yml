@@ -68,16 +68,15 @@ jobs:
         VERSION=${{ github.ref_name }}
         NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
-        #for solution in **/*.sln; do
-          #msbuild $solution \
-          msbuild \
+        for solution in **/*.sln; do
+          msbuild $solution \
             /t:Build \
             --property:RestorePackages=false \
             --property:Configuration=${{ env.BUILD_CONFIG }} \
             --property:Version=$CLEAN_VERSION \
             --property:InformationalVersion=$VERSION \
             --property:Platform="Any CPU" \
-        #done
+        done
     - name: Build
       if: env.IS_MS_BUILD != 'true'
       shell: bash
