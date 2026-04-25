@@ -72,7 +72,7 @@ jobs:
         NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
         for solution in **/*.sln; do
-          MSBuild $solution \
+          ${{ env.MSBuildPath }}\msbuild.exe $solution \
             /t:Build \
             --property:RestorePackages=false \
             --property:Configuration=${{ env.BUILD_CONFIG }} \
