@@ -30,7 +30,7 @@ jobs:
         dotnetVersion: [ 10.x, 6.x ]
 
     runs-on: ${{ matrix.os }}
-    if: "env.IS_MS_BUILD != 'true' || matrix.is_windows == 'true'"
+    if: "vars.IS_MS_BUILD != 'true' || matrix.is_windows == 'true'"
 
     steps:
     - uses: actions/checkout@v6
