@@ -51,6 +51,9 @@ jobs:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore dependencies
       run: dotnet restore --locked-mode
+    - name: Setup MSBuild
+      if: env.IS_MS_BUILD == 'true'
+      uses: microsoft/setup-msbuild@v3
     - name: MSBuild
       if: env.IS_MS_BUILD == 'true'
       shell: bash
@@ -58,12 +61,16 @@ jobs:
         VERSION=${{ github.ref_name }}
         NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
-        dotnet msbuild /t:Build \
-          --property:RestorePackages=false \
-          --property:Configuration=${{ env.BUILD_CONFIG }} \
-          --property:Version=$CLEAN_VERSION \
-          --property:InformationalVersion=$VERSION \
-          --property:Platform="Any CPU" \
+        #for solution in **/*.sln; do
+          #msbuild $solution \
+          msbuild \
+            /t:Build \
+            --property:RestorePackages=false \
+            --property:Configuration=${{ env.BUILD_CONFIG }} \
+            --property:Version=$CLEAN_VERSION \
+            --property:InformationalVersion=$VERSION \
+            --property:Platform="Any CPU" \
+        #done
     - name: Build
       if: env.IS_MS_BUILD != 'true'
       shell: bash
