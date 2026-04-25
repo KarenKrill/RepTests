@@ -72,10 +72,12 @@ jobs:
         VERSION=${{ github.ref_name }}
         NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
+        TARGET_FRAMEWORK="net$(echo ${{ matrix.dotnetVersion }} | cut -d. -f1).0"
         for solution in **/*.sln; do
           echo "Building $solution"
           ${{ env.MSBuildPath }}\msbuild.exe $solution \
             //t:Build \
+            //p:TargetFramework=$TARGET_FRAMEWORK \
             //p:RestorePackages=false \
             //p:Configuration=${{ env.BUILD_CONFIG }} \
             //p:Version=$CLEAN_VERSION \
@@ -86,9 +88,11 @@ jobs:
       if: env.IS_MS_BUILD != 'true'
       shell: bash
       run: |
+        TARGET_FRAMEWORK="net$(echo ${{ matrix.dotnetVersion }} | cut -d. -f1).0"
         dotnet build "${{ github.workspace }}" \
         --no-restore \
         --configuration ${{ env.BUILD_CONFIG }} \
+        --property:TargetFramework=$TARGET_FRAMEWORK \
         --property:Version="${{ github.ref_name }}" \
         --property:Platform="Any CPU"
 
