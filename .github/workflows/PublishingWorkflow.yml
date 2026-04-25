@@ -76,11 +76,11 @@ jobs:
           echo "Building $solution"
           ${{ env.MSBuildPath }}\msbuild.exe $solution \
             /t:Build \
-            --property:RestorePackages=false \
-            --property:Configuration=${{ env.BUILD_CONFIG }} \
-            --property:Version=$CLEAN_VERSION \
-            --property:InformationalVersion=$VERSION \
-            --property:Platform="Any CPU"
+            /p:RestorePackages=false \
+            /p:Configuration=${{ env.BUILD_CONFIG }} \
+            /p:Version=$CLEAN_VERSION \
+            /p:InformationalVersion=$VERSION \
+            /p:Platform="Any CPU"
         done
     - name: Build
       if: env.IS_MS_BUILD != 'true'
