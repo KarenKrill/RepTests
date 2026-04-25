@@ -68,10 +68,12 @@ jobs:
       if: env.IS_MS_BUILD == 'true' && matrix.is_windows
       shell: bash
       run: |
+        shopt -s globstar
         VERSION=${{ github.ref_name }}
         NO_V_VERSION=${VERSION#v}
         CLEAN_VERSION=${NO_V_VERSION%%-*}
         for solution in **/*.sln; do
+          echo "Building $solution"
           ${{ env.MSBuildPath }}\msbuild.exe $solution \
             /t:Build \
             --property:RestorePackages=false \
