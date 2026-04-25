@@ -13,7 +13,7 @@ env:
   ARTIFACTS_DIR: ${{ github.workspace }}/bin/Release
   NUPKG_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
   BUILD_CONFIG: Release
-  IS_MS_BUILD: false
+  IS_MS_BUILD: true
   NUGET_JOB_INDEX: 0
 
 jobs:
