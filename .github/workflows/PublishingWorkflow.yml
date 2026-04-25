@@ -22,6 +22,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest, windows-latest ]
+        include:
+          - os: windows-latest
+            is_windows: true
+          - os: ubuntu-latest
+            is_windows: false
         dotnetVersion: [ 10.x, 6.x ]
 
     runs-on: ${{ matrix.os }}
@@ -52,10 +57,12 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore --locked-mode
     - name: Setup MSBuild
-      if: env.IS_MS_BUILD == 'true'
+      if: env.IS_MS_BUILD == 'true' && matrix.is_windows
       uses: microsoft/setup-msbuild@v3
+      with:
+        msbuild-architecture: x64
     - name: MSBuild
-      if: env.IS_MS_BUILD == 'true'
+      if: env.IS_MS_BUILD == 'true' && matrix.is_windows
       shell: bash
       run: |
         VERSION=${{ github.ref_name }}
