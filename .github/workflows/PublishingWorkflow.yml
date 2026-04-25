@@ -33,7 +33,7 @@ jobs:
 
     steps:
     - name: Cancel job if it's MSBuild on non-Windows
-      if: env.IS_MS_BUILD == 'false' || matrix.is_windows
+      if: env.IS_MS_BUILD && !matrix.is_windows
       run: exit 1
     - uses: actions/checkout@v6
       with:
