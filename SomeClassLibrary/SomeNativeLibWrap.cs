@@ -7,7 +7,7 @@ namespace SomeClassLibrary
 {
     public static class SomeNativeLibWrap
     {
-        [DllImport("SomeNativeLib.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("SomeNativeLib", CallingConvention = CallingConvention.Cdecl)]
         public static extern int Sum(int a, int b);
     }
 }

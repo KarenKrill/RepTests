@@ -22,11 +22,18 @@
 	<ShippingType>NuGet</ShippingType>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-	
+
   <ItemGroup>
-    <None Include="..\out\build\x64-release\SomeNativeLib\SomeNativeLib.dll" Link="SomeNativeLib.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+	<None Include="..\out\build\x64-release\SomeNativeLib\SomeNativeLib.dll"
+		  Link="SomeNativeLib.dll"
+		  Condition="'$(OS)' == 'Windows_NT'">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	<None Include="../out/build/linux-release/SomeNativeLib/libSomeNativeLib.so"
+		  Link="libSomeNativeLib.so"
+		  Condition="'$(OS)' != 'Windows_NT'">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
   </ItemGroup>
 	
   <!--<ItemGroup>
