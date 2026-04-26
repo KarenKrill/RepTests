@@ -60,8 +60,7 @@ jobs:
     - name: Restore dependencies
       shell: bash
       run: |
-        TARGET_FRAMEWORK="net$(echo ${{ matrix.dotnetVersion }} | cut -d. -f1).0"
-        dotnet restore --locked-mode --property:TargetFramework=$TARGET_FRAMEWORK
+        dotnet restore --locked-mode
     - name: Setup MSBuild
       if: env.IS_MS_BUILD == 'true' && matrix.is_windows
       uses: microsoft/setup-msbuild@v3
