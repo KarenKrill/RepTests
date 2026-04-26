@@ -102,6 +102,7 @@ jobs:
       shell: bash
       run: |
         shopt -s globstar nullglob dotglob
+        TARGET_FRAMEWORK="net$(echo ${{ matrix.dotnetVersion }} | cut -d. -f1).0"
         for proj in **/*.csproj; do
             echo "Checking $proj"
             IS_SHIPPING_TARGET=$(dotnet msbuild "$proj" -nologo -getProperty:IsShippingTarget)
@@ -118,7 +119,7 @@ jobs:
                 echo "Publishing app $NAME..."
                 DOTNET_MAJOR=$(echo "${{ matrix.dotnetVersion }}" | cut -d. -f1)
                 APP_ARTIFACTS_DIR="${{ env.ARTIFACTS_DIR }}/$NAME-${{ github.ref_name }}.net$DOTNET_MAJOR.${{ runner.os }}"
-                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --no-self-contained -o "$APP_ARTIFACTS_DIR"
+                dotnet publish "$proj" --no-build -c ${{ env.BUILD_CONFIG }} --no-self-contained -o "$APP_ARTIFACTS_DIR" --property:TargetFramework=$TARGET_FRAMEWORK
                 ZIP_NAME=$(basename "$APP_ARTIFACTS_DIR")
                 (
                   cd "${{ env.ARTIFACTS_DIR }}" || exit 1
