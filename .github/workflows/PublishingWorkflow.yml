@@ -59,11 +59,6 @@ jobs:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore dependencies
       run: dotnet restore --locked-mode
-    - name: Setup MSBuild
-      if: env.IS_MS_BUILD == 'true' && matrix.is_windows
-      uses: microsoft/setup-msbuild@v3
-      with:
-        msbuild-architecture: x64
     - name: MSBuild
       if: env.IS_MS_BUILD == 'true' && matrix.is_windows
       shell: bash
@@ -75,14 +70,14 @@ jobs:
         TARGET_FRAMEWORK="net$(echo ${{ matrix.dotnetVersion }} | cut -d. -f1).0"
         for solution in **/*.sln; do
           echo "Building $solution"
-          ${{ env.MSBuildPath }}\msbuild.exe $solution \
-            //t:Build \
-            //p:TargetFramework=$TARGET_FRAMEWORK \
-            //p:RestorePackages=false \
-            //p:Configuration=${{ env.BUILD_CONFIG }} \
-            //p:Version=$CLEAN_VERSION \
-            //p:InformationalVersion=$VERSION \
-            //p:Platform="Any CPU"
+          dotnet msbuild $solution \
+            --target:Build \
+            --property:TargetFramework=$TARGET_FRAMEWORK \
+            --property::RestorePackages=false \
+            --property::Configuration=${{ env.BUILD_CONFIG }} \
+            --property::Version=$CLEAN_VERSION \
+            --property::InformationalVersion=$VERSION \
+            --property::Platform="Any CPU"
         done
     - name: Build
       if: env.IS_MS_BUILD != 'true'
