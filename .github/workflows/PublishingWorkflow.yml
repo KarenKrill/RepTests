@@ -57,6 +57,11 @@ jobs:
         source-url: ${{ env.NUPKG_SOURCE }}
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Setup MSBuild
+      if: env.IS_MS_BUILD == 'true' && matrix.is_windows
+      uses: microsoft/setup-msbuild@v3
+      with:
+        msbuild-architecture: x64
     - name: Restore dependencies
       run: dotnet restore --locked-mode
     - name: MSBuild
