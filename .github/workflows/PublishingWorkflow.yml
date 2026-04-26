@@ -25,8 +25,10 @@ jobs:
         include:
           - os: windows-latest
             is_windows: true
+            cmake_preset: x64-release
           - os: ubuntu-latest
             is_windows: false
+            cmake_preset: linux-release
         dotnetVersion: [ 10.x, 6.x ]
 
     runs-on: ${{ matrix.os }}
@@ -48,6 +50,10 @@ jobs:
         else
           echo "IS_DEFAULT_BRANCH=false" >> $GITHUB_ENV
         fi
+    - name: Configure CMake
+      run: cmake -B out/build/${{ matrix.cmake_preset }} -DCMAKE_BUILD_TYPE=${{ env.BUILD_CONFIG }}
+    - name: Build C++
+      run: cmake --build out/build/${{ matrix.cmake_preset }} --config ${{ env.BUILD_CONFIG }}
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
