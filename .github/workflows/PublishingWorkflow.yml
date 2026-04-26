@@ -73,11 +73,11 @@ jobs:
           dotnet msbuild $solution \
             --target:Build \
             --property:TargetFramework=$TARGET_FRAMEWORK \
-            --property::RestorePackages=false \
-            --property::Configuration=${{ env.BUILD_CONFIG }} \
-            --property::Version=$CLEAN_VERSION \
-            --property::InformationalVersion=$VERSION \
-            --property::Platform="Any CPU"
+            --property:RestorePackages=false \
+            --property:Configuration=${{ env.BUILD_CONFIG }} \
+            --property:Version=$CLEAN_VERSION \
+            --property:InformationalVersion=$VERSION \
+            --property:Platform="Any CPU"
         done
     - name: Build
       if: env.IS_MS_BUILD != 'true'
