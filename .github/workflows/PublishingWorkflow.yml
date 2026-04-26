@@ -58,9 +58,7 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore dependencies
-      shell: bash
-      run: |
-        dotnet restore --locked-mode
+      run: dotnet restore --locked-mode
     - name: Setup MSBuild
       if: env.IS_MS_BUILD == 'true' && matrix.is_windows
       uses: microsoft/setup-msbuild@v3
